@@ -1,0 +1,2 @@
+# Factoring
+Various Factoring Methods

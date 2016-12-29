@@ -33,16 +33,51 @@ def bfactor (n,arr):
 # 2. all rows have 1's, so independent, (but in this case we repeat with another row which should be dependent)
 
 def subsetsum2 ( m):
-    for i in range (0,len(m)):
+    for i in range (0,1):
         tempm = []
         for j in range (0, len(m)):
             if i==j:
                 continue
             tempm.append(map(lambda x,y: x ^ y , m[i],m[j]))
-        print tempm
+        rref2 (tempm)
+        #print tempm
 
+# takes in a b*b matrix and returns the subset if 0 found or [] otherwise
 def rref2(m):
-    f
+    c=0
+    print "curr m", m
+    
+    # create a counter which counts which elements were added to the row when turning to rref
+    # I think it's the L part of the LU decomposition?
+    # should be populated with identity matrix
+    counterm = [[0]*len(m)]*len(m)
+    for i in range (0, len(m)):
+        counterm[i][i] =1
+
+    for i in range (0, len(m)-1):
+    	print "step m", m
+        if m[i][c] ==0: #first check if 1 in the correct position
+            ii = find_next_row (m,i,c)
+            if ii<0:
+                c+=1
+            else:
+                t = m[i]
+                m[i] = m[ii]
+                m[ii] = t
+        for j in range (i+1, len(m)):
+            if m[j][c]==1:
+                m[j] = map(lambda x,y: x ^ y , m[i],m[j])
+                counterm[j] = map(lambda x,y: x+y, counterm[i],counterm[j])
+        c+=1
+    print m
+    print counterm
+
+#finds row in m where 1 at position i
+def find_next_row (m,i,c):
+    for ii in range (i+1, len(m)):
+        if m[ii][c] ==1:
+            return ii
+    return -1
 
 # takes as input n and returns first found factors
 # returns tuple of factors or empty tuple if prime
@@ -78,5 +113,5 @@ if len(sys.argv) < 2:
 
 
 print factor(float(sys.argv[1]))
-print pvals
-print pmatrix
+#print pvals
+#print pmatrix

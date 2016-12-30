@@ -34,12 +34,15 @@ def bfactor (n,arr):
 
 def subsetsum2 ( m):
     for i in range (0,1):
+        print "Using m", m
         tempm = []
         for j in range (0, len(m)):
             if i==j:
                 continue
             tempm.append(map(lambda x,y: x ^ y , m[i],m[j]))
-        rref2 (tempm)
+        square = rref2 (tempm)
+        if square:
+            f
         #print tempm
 
 # takes in a b*b matrix and returns the subset if 0 found or [] otherwise
@@ -48,22 +51,27 @@ def rref2(m):
     print "curr m", m
     
     # create a counter which counts which elements were added to the row when turning to rref
-    # I think it's the L part of the LU decomposition?
+    # This is not the LU decomposition! It simply counts which lines need to be added to make rref
     # should be populated with identity matrix
-    counterm = [[0]*len(m)]*len(m)
+    counterm = [[0 for i in xrange (len(m))] for j in range (len(m))]
+    #print counterm
     for i in range (0, len(m)):
         counterm[i][i] =1
 
     for i in range (0, len(m)-1):
     	print "step m", m
+    	#print counterm
         if m[i][c] ==0: #first check if 1 in the correct position
             ii = find_next_row (m,i,c)
             if ii<0:
                 c+=1
             else:
                 t = m[i]
+                countert = counterm[i]
                 m[i] = m[ii]
+                counterm[i]=counterm[ii]
                 m[ii] = t
+                counterm[ii]= countert
         for j in range (i+1, len(m)):
             if m[j][c]==1:
                 m[j] = map(lambda x,y: x ^ y , m[i],m[j])
@@ -71,6 +79,10 @@ def rref2(m):
         c+=1
     print m
     print counterm
+    if reduce(lambda x,y: x+y,m[len(m)-1],0) ==0:
+        return counterm[len(m)-1]
+    else:
+        return []
 
 #finds row in m where 1 at position i
 def find_next_row (m,i,c):

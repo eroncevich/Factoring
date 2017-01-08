@@ -1,5 +1,6 @@
 import math
 import sys
+import fractions
 
 b = 4 # number of primes needed.
 
@@ -27,17 +28,17 @@ def bfactor (n,arr):
     return None
 
 # takes in m which is a matrix counting the powers of primes ex (2^x, 3^y, 5^z, ...)
-# and counter is the base 2 counter from rref2 which adds up the matrices to get the square number
-# index is needed to add the m[index] element by default.
-def addprimes (m, counter, index):
-	tempm = m[:]
-	sum_arr = [0 for i in range (0,len(counter))]
-	sum_arr = map(lambda x,y: x+y, sum_arr, tempm[index])
-	del tempm[index]
+# and counter is the base 2 counter from rref2 which adds up the matrices to get the squared number
+# and returns the square root
+def addprimes (m, counter):
+	#tempm = m[:]
+	sum_arr = [0 for i in range (0,len(m[0]))]
+	#print m,counter
 	for i in range(0, len(counter)):
 	    if counter[i]:
-	        sum_arr = map(lambda x,y: x+y, sum_arr, tempm[i])
-	return sum_arr
+	 #       print m[i]
+	        sum_arr = map(lambda x,y: x+y, sum_arr, m[i])
+	return map(lambda x:x/2, sum_arr)
 
 # this function will go through, select one of the b+1 rows, xor with other rows, and rref2
 # the other rows. Either the rref2 will have:
@@ -65,16 +66,21 @@ def subsetsum2 ( m, pvals2):
                 continue
             tempm.append(map(lambda x,y: x ^ y , m2[i],m2[j]))
         square = rref2 (tempm)
-        if square: # if the array is not empty
+        if square: # if the array is not empty, return the counter of m
             print "Found square"
             print "base 2",square
+            square.insert(i, 1)
+            return square
+
 
             #print "base primes", m
-            square_parr = addprimes (m, square, i)
-            print "base primes", square_parr
-            print "square", map(lambda x: x/2, square_parr)
-            exit()
-        #print tempm
+            #square_parr = addprimes (m, square, i)
+            #print "base primes", square_parr
+            #print "square", map(lambda x: x/2, square_parr)
+            #return (map(lambda x: x/2, square_parr))
+        
+    print "error no root found"
+    exit()    #print tempm
 
 # takes in a b*b matrix and returns the subset if 0 found or [] otherwise
 # this is just using a type of rref in base 2 which then adds up which rows were used to create
@@ -128,6 +134,7 @@ def find_next_row (m,i,c):
 # returns tuple of factors or empty tuple if prime
 def factor(n):
     global b
+    avals = []
     a0 = int (math.ceil(math.sqrt (n)))
     i=a0
     while len(pvals)<b+1:
@@ -137,6 +144,7 @@ def factor(n):
             i+=1
             continue
         #print qx
+        avals.append (i)
         parr = bfactor (qx, [0]*b)
         print qx, parr
         pvals.append (qx)
@@ -144,8 +152,23 @@ def factor(n):
         i+=1
         #print i, parr
     print "Table", pmatrix
-    subsetsum2 ( pmatrix, pvals)
+    square_parr = subsetsum2 ( pmatrix, pvals)
+    print avals
+    print square_parr
+    left = 1
+    for i in range(0, len(avals)):
+        left *= avals[i] if square_parr[i] else 1
+        left = int(left % n)
+    #for j in range(0, len(avals)):
+    square_root = addprimes(pmatrix, square_parr)
+    right =1
+    for i in range(0, len(square_root)):
+        right *= primes[i]** square_root[i]
+        right = int(right % n)
+    print left, right
 
+    r1 = int(fractions.gcd(int((left-right)% n), n))
+    return (r1, int(n/r1))
 
 if len(sys.argv) < 2:
     print "error: needs 1 argument "

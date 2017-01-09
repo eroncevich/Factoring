@@ -1,22 +1,32 @@
 import math
 import sys
 import fractions
+import random
 
-b = 4 # number of primes needed.
+b = 4 # number of primes needed. This can be anything
 
+#just a list of the first couple of primes
 primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97]
-pmatrix = []
-pvals = []
 
-def bfactorable (n):
-    global b
-    if n == 1:
-        return True
-    for i in range(0,b):
-        if (n % primes[i]) ==0:
-            return bfactorable (n / primes[i])
-    return False
+#sample primes for testing
+p1 = 132241
+p2 = 670177
+p3 = 437867
+p4 = 7231210439
+p5 = 1691080409
+p6 = 1906398731
+p7 = 131
+p8 = 89
+p9 = 29
 
+
+#sample of semiprimes for testing
+n1 = 88624876657 #p1*p2
+n2 = 3799 # p7*p9
+
+
+# given n and array, recursively produce array counting the prime factors
+# or return None if not bsmooth.
 def bfactor (n,arr):
     global b
     if n==1:
@@ -55,7 +65,7 @@ def subsetsum2 ( m, pvals2):
 
     #print m2
 
-    for i in range (0,1):
+    for i in range (0,len(m)):
         #print "Using m2", m2
         tempm = []
         temp_pvals = pvals2[:]
@@ -71,16 +81,9 @@ def subsetsum2 ( m, pvals2):
             print "base 2",square
             square.insert(i, 1)
             return square
-
-
-            #print "base primes", m
-            #square_parr = addprimes (m, square, i)
-            #print "base primes", square_parr
-            #print "square", map(lambda x: x/2, square_parr)
-            #return (map(lambda x: x/2, square_parr))
         
     print "error no root found"
-    exit()    #print tempm
+    exit()
 
 # takes in a b*b matrix and returns the subset if 0 found or [] otherwise
 # this is just using a type of rref in base 2 which then adds up which rows were used to create
@@ -133,20 +136,28 @@ def find_next_row (m,i,c):
 # takes as input n and returns first found factors
 # returns tuple of factors or empty tuple if prime
 def factor(n):
+    pmatrix = []
+    pvals = []
     global b
     avals = []
     a0 = int (math.ceil(math.sqrt (n)))
     i=a0
     while len(pvals)<b+1:
+        i = random.randint(a0,n)
+        if i in avals:
+            continue
+
         qx = int ((i*i)% n)
         #print qx
-        if not bfactorable(qx):
+
+        parr = bfactor (qx, [0]*b)
+        if not parr:
             i+=1
             continue
         #print qx
         avals.append (i)
-        parr = bfactor (qx, [0]*b)
-        print qx, parr
+        
+        print i, "->", qx, parr
         pvals.append (qx)
         pmatrix.append (parr)#map (lambda x: x%2,parr))
         i+=1
@@ -181,7 +192,7 @@ if len(sys.argv) < 2:
 #print bfactorable (360)
 #print bfactorable (560)
 
-
-print factor(float(sys.argv[1]))
+for i in range(0,100):
+    roots =factor(float(sys.argv[1]))
 #print pvals
 #print pmatrix

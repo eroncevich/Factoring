@@ -40,7 +40,7 @@ def bfactor (n,arr):
 # takes in m which is a matrix counting the powers of primes ex (2^x, 3^y, 5^z, ...)
 # and counter is the base 2 counter from rref2 which adds up the matrices to get the squared number
 # and returns the square root
-def addprimes (m, counter):
+def combine_primes (m, counter):
 	#tempm = m[:]
 	sum_arr = [0 for i in range (0,len(m[0]))]
 	#print m,counter
@@ -48,7 +48,11 @@ def addprimes (m, counter):
 	    if counter[i]:
 	 #       print m[i]
 	        sum_arr = map(lambda x,y: x+y, sum_arr, m[i])
-	return map(lambda x:x/2, sum_arr)
+	return sum_arr#map(lambda x:x/2, sum_arr)
+
+def add_primes(xs,ys):
+    return map(lambda x,y: int((x+y)%2),xs,ys) 
+    
 
 # this function will go through, select one of the b+1 rows, xor with other rows, and rref2
 # the other rows. Either the rref2 will have:
@@ -61,21 +65,26 @@ def subsetsum2 ( m):
     m2 = [] # base 2 matrix version of m
     for i in range (0, len(m)):
         m2.append (map (lambda x: x%2,m[i]))
-    print "M2", m2
+    #print "M2", m2
 
-    for i in range (0,len(m)):
-    	print i
+    for i in range (0,1):
+    	#print i
         cur_m2 = []
         for j in range (0, len(m2)):
             if i==j:
                 continue
             cur_m2.append(map(lambda x,y: x ^ y , m2[i],m2[j]))
-        square = rref2 (cur_m2)
-        if square: # if the array is not empty, return the counter of m
-            print "Found square"
-            print "base 2",square
-            square.insert(i, int(reduce(lambda x,y: x+y, square, 0) % 2))
-            print square
+        result = rref2 (cur_m2, m2[i])
+        lin_ind = result[0]
+        square = result[1]
+        #print "Found square"
+        if lin_ind: # if the array is not empty, return the counter of m
+            square.insert(i, int((reduce(lambda x,y: x+y, square, 0)) % 2))
+            #print square, i
+            return square
+        else: 
+            square.insert(i, int((reduce(lambda x,y: x+y, square, 0)+1) % 2))
+            #print square, i
             return square
         
     print "error no root found"
@@ -84,7 +93,7 @@ def subsetsum2 ( m):
 # takes in a b*b matrix and returns the subset if 0 found or [] otherwise
 # this is just using a type of rref in base 2 which then adds up which rows were used to create
 # the final row. If the final row is all 0's, return which rows were used.
-def rref2(m):
+def rref2(m, parr):
     c=0
     #print "curr m", m
     
@@ -101,7 +110,7 @@ def rref2(m):
     	#print counterm
     	#print c, i
     	if c == len(m)-1:
-            return counterm[len(m)-1]
+            return (True,counterm[len(m)-1])
         if m[i][c] ==0: #first check if 1 in the correct position
             ii = find_next_row (m,i,c)
             if ii<0:
@@ -116,7 +125,7 @@ def rref2(m):
                 m[ii] = t
                 counterm[ii]= countert
         if c == len(m)-1:
-            return counterm[len(m)-1]
+            return (True,counterm[len(m)-1])
         for j in range (i+1, len(m)):
             if m[j][c]==1:
                 m[j] = map(lambda x,y: x ^ y , m[i],m[j])
@@ -126,9 +135,17 @@ def rref2(m):
     #print m
     #print counterm
     if reduce(lambda x,y: x+y,m[len(m)-1],0) ==0:
-        return counterm[len(m)-1]
+        return (True,counterm[len(m)-1])
     else:
-        return []
+        parr_t = parr[:]
+        ind_counter = [0]*len(m)
+        for i in range(0,len(m)):
+            if parr_t[i]==1:
+                parr_t = add_primes (parr_t, m[i])
+                ind_counter = add_primes(ind_counter, counterm[i])
+        #print ind_counter
+        return (False,ind_counter)
+        #return []
 
 #finds row in m where 1 at position i
 def find_next_row (m,i,c):
@@ -166,21 +183,22 @@ def factor(n):
         pmatrix.append (parr)#map (lambda x: x%2,parr))
         #i+=1
         #print i, parr
-    print "Table", pmatrix
+    #print "Table", pmatrix
     square_parr = subsetsum2 ( pmatrix)
-    print avals
-    print square_parr
+    #print avals
+    #print square_parr
     left = 1
     for i in range(0, len(avals)):
         left *= avals[i] if square_parr[i] else 1
         left = int(left % n)
     #for j in range(0, len(avals)):
-    square_root = addprimes(pmatrix, square_parr)
+    #map(lambda x:x/2, sum_arr)
+    square_root = map(lambda x:x/2,combine_primes(pmatrix, square_parr))
     right =1
     for i in range(0, len(square_root)):
         right *= primes[i]** square_root[i]
         right = int(right % n)
-    print left, right
+    #print left, right
 
     r1 = int(fractions.gcd(int((left-right)% n), n))
     return (r1, int(n/r1))
@@ -190,11 +208,28 @@ if len(sys.argv) < 2:
     print "python bruteforce.py [integer]"
     exit()
 
+'''25481727521 -> 13500 [2, 3, 3, 0]
+6763981673 -> 160781250 [1, 1, 7, 3]
+53771507552 -> 16056320000 [19, 0, 4, 2]
+9984419712 -> 28697814 [1, 15, 0, 0]
+67440756733 -> 20155392 [10, 9, 0, 0]
+'''
+mm = [
+[2, 3, 3, 0]
+,[1, 1, 7, 3]
+,[19, 0, 4, 2]
+,[1, 15, 0, 0]
+,[10, 9, 0, 0]
+]
+#print mm
+#print subsetsum2(mm)
+#exit()
 #random.seed(1232)
 for i in range(0,100):
+    print "Attempt", i
     roots =factor(float(sys.argv[1]))
     if roots[0] != 1 and roots[1] != 1:
-        print roots
+        print "Found roots",roots
         exit()
 print "Couldn't find roots, giving up"
 #print pvals
